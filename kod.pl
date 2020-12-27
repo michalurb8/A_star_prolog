@@ -100,7 +100,6 @@ ask(Data) :-
 valid(yes).
 valid(no).
 
-
 read_list(ChosenList,N):-
 	readln(List),
 	process_list(N,0,List,ChosenList).
