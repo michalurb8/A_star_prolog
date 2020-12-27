@@ -99,3 +99,18 @@ ask(Data) :-
 
 valid(yes).
 valid(no).
+
+
+read_list(ChosenList,N):-
+	readln(List),
+	process_list(N,0,List,ChosenList).
+
+process_list(_,_,[],[]).
+process_list(N,N,_,[]).
+process_list(N,Iter,['.'|_],[]):-
+	N\=Iter.
+process_list(N,Iter,[X|RList],[X|ProcessedList]):-
+	X \='.',
+	Iter < N,
+	NewIter is Iter + 1,
+	process_list(N,NewIter,RList,ProcessedList).
