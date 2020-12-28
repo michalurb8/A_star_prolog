@@ -1,4 +1,3 @@
-require(goal).
 start_A_star(InitState, PathCost, N) :-
 	score(InitState, 0, 0, InitCost, InitScore),
 	search_A_star([node(InitState, nil, nil, InitCost, InitScore)], [], PathCost, N, 0).
@@ -77,12 +76,12 @@ del([Y | R],X,[Y | R1]) :-
 	X\=Y,
 	del(R,X,R1).
 
-%added:
+%presentn(List, N, Depth) : Prints a prompt with current Depth, then the first N elements of List
+presentn(List, N, Depth) :-
+	format("\nDepth ~w: Hello, these are the first N nodes in the queue:\n", [Depth, N]),
+	printn(List, N), nl, nl.
 
-presentn(Queue, N, Iternum) :-
-	format("\nDepth ~w: Hello, these are the first N nodes in the queue:\n", [Iternum, N]),
-	printn(Queue, N), nl, nl.
-
+%printn(List, N) : Prints the first N elements of List
 printn(_, 0) :- !.
 printn([], _).
 printn([X | R], N) :-
@@ -90,12 +89,13 @@ printn([X | R], N) :-
 	NewN is N-1,
 	printn(R,NewN).
 
-ask(Data) :-
+%ask(Choice) : Asks for a yes/no response on input, stores result in Choice
+printn(_, 0) :- !.
+ask(Choice) :-
 	repeat,
 	write("yes|no\n"),
-	read(Data),
-	valid(Data),
+	read(Choice),
+	valid(Choice),
 	!.
-
 valid(yes).
 valid(no).
