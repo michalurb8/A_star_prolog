@@ -1,32 +1,39 @@
-start_A_star(InitState, PathCost, N) :-
+start_A_star(InitState, PathCost, N, Limit) :-
 	score(InitState, 0, 0, InitCost, InitScore),
-	search_A_star([node(InitState, nil, nil, InitCost, InitScore)], [], PathCost, N, 0).
+	search_A_star([node(InitState, nil, nil, InitCost, InitScore)], [], PathCost, N, 0, Limit).
 
 
-search_A_star(Queue, ClosedSet, PathCost, N, Iter) :-
+search_A_star(Queue, ClosedSet, PathCost, N, Iter, Limit) :-
 	presentn(Queue, N, Iter),
+	write('Enter the order to choose the nodes at this depth:'), nl,
 	read_list(ChosenList,N),
-	reorder(Queue,ChosenList, TmpQueue),
-	fetch(Node, TmpQueue, ClosedSet, RestQueue),
-        continue(Node, RestQueue, ClosedSet, PathCost, N, Iter).
+	fetch(Node, Queue, ChosenList, ClosedSet, RestQueue),
+	format('Depth ~w: Node chosen for processing now: ~w. Going deeper:', [Iter, Node]), nl,
+    continue(Node, RestQueue, ClosedSet, PathCost, N, Iter, Limit).
 
 
-continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path,Cost), _, _) :-
+continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path,Cost), _, _, _) :-
 	goal(State), !,
+	write('Solution found!'),
 	build_path(node(Parent, _, _, _, _), ClosedSet, [Action/State], Path).
 
-continue(Node, RestQueue, ClosedSet, Path, N, Iter) :-
+continue(Node, RestQueue, ClosedSet, Path, N, Iter, Limit) :-
 	expand(Node, NewNodes),
 	insert_new_nodes(NewNodes, RestQueue, NewQueue),
 	NewIter is Iter+1,
-	search_A_star(NewQueue, [Node | ClosedSet], Path, N, NewIter).
+	search_A_star(NewQueue, [Node | ClosedSet], Path, N, NewIter, Limit).
 
 
-fetch(node(State, Action,Parent, Cost, Score), [node(State, Action,Parent, Cost, Score) | RestQueue], ClosedSet, RestQueue) :-
+fetch(node(State, Action,Parent, Cost, Score), [node(State, Action,Parent, Cost, Score) | RestQueue], [], ClosedSet, RestQueue) :-
 	\+ member(node(State, _, _, _, _), ClosedSet), !.
 
-fetch(Node, [_ | RestQueue], ClosedSet, NewRest) :-
-	fetch(Node, RestQueue, ClosedSet, NewRest).
+fetch(node(State, Action, Parent, Cost, Score), Queue, [WhichFirst | _], ClosedSet, RestQueue) :-
+	get_element(Queue, WhichFirst, node(State, Action, Parent, Cost, Score)),
+	\+ member(node(State, _, _, _, _), ClosedSet),
+	del(Queue, node(State, Action, Parent, Cost, Score), RestQueue).
+
+fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
+	fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
 
 
 expand(node(State, _,_, Cost, _), NewNodes) :-
@@ -80,22 +87,21 @@ del([Y | R],X,[Y | R1]) :-
 
 %presentn(List, N, Depth) : Prints a prompt with current Depth, then the first N elements of List
 presentn(List, N, Depth) :-
-	format("\nDepth ~w: Hello, these are the first N nodes in the queue:\n", [Depth, N]),
+	format('Depth ~w: Hello, these are the first nodes in the queue (max N=~w):', [Depth, N]), nl,
 	printn(List, N), nl, nl.
 
 %printn(List, N) : Prints the first N elements of List
 printn(_, 0) :- !.
 printn([], _).
 printn([X | R], N) :-
-	format("~w ", X),
+	format('~w ', X),
 	NewN is N-1,
 	printn(R,NewN).
 
 %ask(Choice) : Asks for a yes/no response on input, stores result in Choice
-printn(_, 0) :- !.
 ask(Choice) :-
 	repeat,
-	write("yes|no\n"),
+	write('yes|no'), nl,
 	read(Choice),
 	valid(Choice),
 	!.
@@ -107,28 +113,27 @@ read_list(ChosenList,N):-
 	readln(List),
 	process_list(N,0,List,ChosenList).
 
-process_list(_,_,[],[]):-!.
-process_list(N,N,_,[]):-!.
-process_list(_,_,['.'|_],[]).
-process_list(N,Iter,[X|RList],[X|ProcessedList]):-
-	X \='.',
+process_list(_, _, [], []) :- !.
+process_list(N,N,_,[]) :- !.
+process_list(_, _, ['.' | _], []).
+process_list(N, Iter, [X|RList], [X|ProcessedList]):-
+	X \= '.',
 	Iter < N,
 	NewIter is Iter + 1,
-	process_list(N,NewIter,RList,ProcessedList).
+	process_list(N, NewIter, RList, ProcessedList).
 
-get_element(List,N,Element):-
-	get_n_elem(List,N,1,Element).
+get_element(List, N, Element):-
+	get_n_elem(List, N, 1, Element).
 
-get_n_elem([],_,_,_):-fail.
-get_n_elem([Elem|_],N,N,Elem).
-get_n_elem([_|RList], N,Iter,Elem):-
+get_n_elem([Elem|_], N, N, Elem).
+get_n_elem([_ | RList], N, Iter, Elem):-
 	Iter < N,
 	NewIter is Iter+1,
-	get_n_elem(RList,N,NewIter,Elem).
+	get_n_elem(RList, N, NewIter, Elem).
 
 
-reorder(_,[],[]).
-reorder([],_,[]).
-reorder(Queue,[X|OrderList],[Element|NewOrder]):-
-	get_element(Queue,X,Element),
-	reorder(Queue,OrderList,NewOrder).
+reorder(_, [], []).
+reorder([], _, []).
+reorder(Queue, [X|OrderList], [Element|NewOrder]) :-
+	get_element(Queue, X, Element),
+	reorder(Queue, OrderList, NewOrder).
