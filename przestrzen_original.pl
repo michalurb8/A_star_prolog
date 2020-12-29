@@ -8,7 +8,7 @@ succ(d,dm,2,m).
 succ(c,ce,3,e).
 succ(e,em,5,m).
 
-goal(c).
+goal(m).
 
 hScore(a,4).
 hScore(b,4).

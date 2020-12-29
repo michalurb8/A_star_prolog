@@ -4,9 +4,11 @@ start_A_star(InitState, PathCost, N) :-
 
 
 search_A_star(Queue, ClosedSet, PathCost, N, Iter) :-
-	fetch(Node, Queue, ClosedSet, RestQueue),
 	presentn(Queue, N, Iter),
-	continue(Node, RestQueue, ClosedSet, PathCost, N, Iter).
+	read_list(ChosenList,N),
+	reorder(Queue,ChosenList, TmpQueue),
+	fetch(Node, TmpQueue, ClosedSet, RestQueue),
+        continue(Node, RestQueue, ClosedSet, PathCost, N, Iter).
 
 
 continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path,Cost), _, _) :-
@@ -76,10 +78,18 @@ del([Y | R],X,[Y | R1]) :-
 	X\=Y,
 	del(R,X,R1).
 
+<<<<<<< HEAD
 %presentn(List, N, Depth) : Prints a prompt with current Depth, then the first N elements of List
 presentn(List, N, Depth) :-
 	format("\nDepth ~w: Hello, these are the first N nodes in the queue:\n", [Depth, N]),
 	printn(List, N), nl, nl.
+=======
+%added:
+
+presentn(Queue, N, Iternum) :-
+	format("\nDepth ~w: Hello, these are the first ~w nodes in the queue:\n",[Iternum, N]),
+	printn(Queue, N), nl, nl.
+>>>>>>> hack_fetch
 
 %printn(List, N) : Prints the first N elements of List
 printn(_, 0) :- !.
@@ -99,3 +109,34 @@ ask(Choice) :-
 	!.
 valid(yes).
 valid(no).
+
+
+read_list(ChosenList,N):-
+	readln(List),
+	process_list(N,0,List,ChosenList).
+
+process_list(_,_,[],[]):-!.
+process_list(N,N,_,[]):-!.
+process_list(_,_,['.'|_],[]).
+process_list(N,Iter,[X|RList],[X|ProcessedList]):-
+	X \='.',
+	Iter < N,
+	NewIter is Iter + 1,
+	process_list(N,NewIter,RList,ProcessedList).
+
+get_element(List,N,Element):-
+	get_n_elem(List,N,1,Element).
+
+get_n_elem([],_,_,_):-fail.
+get_n_elem([Elem|_],N,N,Elem).
+get_n_elem([_|RList], N,Iter,Elem):-
+	Iter < N,
+	NewIter is Iter+1,
+	get_n_elem(RList,N,NewIter,Elem).
+
+
+reorder(_,[],[]).
+reorder([],_,[]).
+reorder(Queue,[X|OrderList],[Element|NewOrder]):-
+	get_element(Queue,X,Element),
+	reorder(Queue,OrderList,NewOrder).
