@@ -78,18 +78,10 @@ del([Y | R],X,[Y | R1]) :-
 	X\=Y,
 	del(R,X,R1).
 
-<<<<<<< HEAD
 %presentn(List, N, Depth) : Prints a prompt with current Depth, then the first N elements of List
 presentn(List, N, Depth) :-
 	format("\nDepth ~w: Hello, these are the first N nodes in the queue:\n", [Depth, N]),
 	printn(List, N), nl, nl.
-=======
-%added:
-
-presentn(Queue, N, Iternum) :-
-	format("\nDepth ~w: Hello, these are the first ~w nodes in the queue:\n",[Iternum, N]),
-	printn(Queue, N), nl, nl.
->>>>>>> hack_fetch
 
 %printn(List, N) : Prints the first N elements of List
 printn(_, 0) :- !.
