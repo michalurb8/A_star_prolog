@@ -8,7 +8,7 @@ search_A_star(Queue, ClosedSet, PathCost, N, Iter, Limit) :-
 	write('Enter the order to choose the nodes at this depth:'), nl,
 	read_list(ChosenList,N),
 	fetch(Node, Queue, ChosenList, ClosedSet, RestQueue),
-	format('Depth ~w: Node chosen for processing now: ~w. Going deeper:', [Iter, Node]), nl,
+	format('Node chosen for processing now, at depth ~w: ~w.', [Iter, Node]), nl,
     continue(Node, RestQueue, ClosedSet, PathCost, N, Iter, Limit).
 
 
@@ -24,9 +24,6 @@ continue(Node, RestQueue, ClosedSet, Path, N, Iter, Limit) :-
 	search_A_star(NewQueue, [Node | ClosedSet], Path, N, NewIter, Limit).
 
 
-fetch(node(State, Action,Parent, Cost, Score), [node(State, Action,Parent, Cost, Score) | RestQueue], [], ClosedSet, RestQueue) :-
-	\+ member(node(State, _, _, _, _), ClosedSet), !.
-
 fetch(node(State, Action, Parent, Cost, Score), Queue, [WhichFirst | _], ClosedSet, RestQueue) :-
 	get_element(Queue, WhichFirst, node(State, Action, Parent, Cost, Score)),
 	\+ member(node(State, _, _, _, _), ClosedSet),
@@ -36,7 +33,7 @@ fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
 	fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
 
 
-expand(node(State, _,_, Cost, _), NewNodes) :-
+expand(node(State, _, _, Cost, _), NewNodes) :-
 	findall(
 		node(ChildState, Action, State, NewCost, ChildScore),
 		(succ(State, Action, StepCost, ChildState), score(ChildState, Cost, StepCost, NewCost, ChildScore)),
@@ -87,7 +84,7 @@ del([Y | R],X,[Y | R1]) :-
 
 %presentn(List, N, Depth) : Prints a prompt with current Depth, then the first N elements of List
 presentn(List, N, Depth) :-
-	format('Depth ~w: Hello, these are the first nodes in the queue (max N=~w):', [Depth, N]), nl,
+	format('\nEntering depth ~w: These are the first nodes in the queue (max ~w):', [Depth, N]), nl,
 	printn(List, N), nl, nl.
 
 %printn(List, N) : Prints the first N elements of List
@@ -108,11 +105,12 @@ ask(Choice) :-
 valid(yes).
 valid(no).
 
-
+%read_list(ChosenList,N) : read a List from input and store first N elements in ChosenList
 read_list(ChosenList,N):-
 	readln(List),
 	process_list(N,0,List,ChosenList).
 
+%process_list(N,0,List,ChosenList) : Store first N elements of List in ChosenList
 process_list(_, _, [], []) :- !.
 process_list(N,N,_,[]) :- !.
 process_list(_, _, ['.' | _], []).
@@ -122,6 +120,7 @@ process_list(N, Iter, [X|RList], [X|ProcessedList]):-
 	NewIter is Iter + 1,
 	process_list(N, NewIter, RList, ProcessedList).
 
+%get_element(List, N, Element) : store Nth element of List in Element
 get_element(List, N, Element):-
 	get_n_elem(List, N, 1, Element).
 
@@ -130,10 +129,3 @@ get_n_elem([_ | RList], N, Iter, Elem):-
 	Iter < N,
 	NewIter is Iter+1,
 	get_n_elem(RList, N, NewIter, Elem).
-
-
-reorder(_, [], []).
-reorder([], _, []).
-reorder(Queue, [X|OrderList], [Element|NewOrder]) :-
-	get_element(Queue, X, Element),
-	reorder(Queue, OrderList, NewOrder).
