@@ -102,7 +102,8 @@ printn([X | R], N) :-
 ask(Choice) :-
 	repeat,
 	write('yes|no'), nl,
-	read(Choice),
+	read_line_to_string(user_input,Input),
+        atom_string(Choice,Input),
 	valid(Choice),
 	!.
 valid('yes').
