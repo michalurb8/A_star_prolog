@@ -100,13 +100,13 @@ printn([X | R], N) :-
 
 %ask(Choice) : Asks for a yes/no response on input, stores result in Choice
 ask(Choice) :-
-%	repeat,
+	repeat,
 	write('yes|no'), nl,
-	read(Choice).
-%	valid(Choice),
-%	!.
-%valid(yes).
-%valid(no).
+	read(Choice),
+	valid(Choice),
+	!.
+valid('yes').
+valid('no').
 
 %read_list(ChosenList,N) : read a List from input and store first N elements in ChosenList
 read_list(ChosenList,N):-
@@ -146,5 +146,10 @@ add_limit(OldLimit, NewLimit,Increase,'yes'):-
 	format('New depth limit is ~w',[NewLimit]),nl.
 add_limit(OldLimit, OldLimit, _,'no').
 
+
+test(Lista,NL):-
+	expand_limit(2,2,NL),
+	write('test'),nl,
+	read_list(Lista,NL).
 
 
