@@ -4,12 +4,13 @@ start_A_star(InitState, PathCost, N, Limit) :-
 
 
 search_A_star(Queue, ClosedSet, PathCost, N, Iter, Limit) :-
+	expand_limit(Iter,Limit,NewLimit),
 	presentn(Queue, N, Iter),
 	write('Enter the order to choose the nodes at this depth:'), nl,
 	read_list(ChosenList,N),
 	fetch(Node, Queue, ChosenList, ClosedSet, RestQueue),
 	format('Node chosen for processing now, at depth ~w: ~w.', [Iter, Node]), nl,
-    continue(Node, RestQueue, ClosedSet, PathCost, N, Iter, Limit).
+    continue(Node, RestQueue, ClosedSet, PathCost, N, Iter, NewLimit).
 
 
 continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path,Cost), _, _, _) :-
@@ -29,8 +30,10 @@ fetch(node(State, Action, Parent, Cost, Score), Queue, [WhichFirst | _], ClosedS
 	\+ member(node(State, _, _, _, _), ClosedSet),
 	del(Queue, node(State, Action, Parent, Cost, Score), RestQueue).
 
-fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
-	fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
+% bez tego nie ma dziwnych nawrotow a tez dziala. Moze jednak nie
+% potrzebne, ale po co wtedy podawac kolejnosc rozwijania
+% fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
+% fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
 
 
 expand(node(State, _, _, Cost, _), NewNodes) :-
@@ -97,13 +100,13 @@ printn([X | R], N) :-
 
 %ask(Choice) : Asks for a yes/no response on input, stores result in Choice
 ask(Choice) :-
-	repeat,
+%	repeat,
 	write('yes|no'), nl,
-	read(Choice),
-	valid(Choice),
-	!.
-valid(yes).
-valid(no).
+	read(Choice).
+%	valid(Choice),
+%	!.
+%valid(yes).
+%valid(no).
 
 %read_list(ChosenList,N) : read a List from input and store first N elements in ChosenList
 read_list(ChosenList,N):-
@@ -129,3 +132,19 @@ get_n_elem([_ | RList], N, Iter, Elem):-
 	Iter < N,
 	NewIter is Iter+1,
 	get_n_elem(RList, N, NewIter, Elem).
+
+expand_limit(Iter,OldLimit,OldLimit):-
+	Iter < OldLimit, !.
+expand_limit(Iter,OldLimit, NewLimit):-
+	Iter >= OldLimit,
+	format('\nDepth limit of ~w reached, do you want to increase depth limit?',[OldLimit]),nl,
+	ask(Choice),
+	add_limit(OldLimit,NewLimit,2,Choice),!.
+
+add_limit(OldLimit, NewLimit,Increase,'yes'):-
+	NewLimit is OldLimit + Increase,
+	format('New depth limit is ~w',[NewLimit]),nl.
+add_limit(OldLimit, OldLimit, _,'no').
+
+
+
