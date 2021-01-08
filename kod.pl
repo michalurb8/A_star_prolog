@@ -12,9 +12,8 @@ search_A_star(Queue, ClosedSet, PathCost, N, Iter, Limit) :-
 	format('Node chosen for processing now, at depth ~w: ~w.', [Iter, Node]), nl,
     continue(Node, RestQueue, ClosedSet, PathCost, N, Iter, NewLimit).
 
-
 continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path,Cost), _, _, _) :-
-	goal(State), !,
+	goal(State),!,
 	write('Solution found!'),
 	build_path(node(Parent, _, _, _, _), ClosedSet, [Action/State], Path).
 
@@ -32,8 +31,8 @@ fetch(node(State, Action, Parent, Cost, Score), Queue, [WhichFirst | _], ClosedS
 
 % bez tego nie ma dziwnych nawrotow a tez dziala. Moze jednak nie
 % potrzebne, ale po co wtedy podawac kolejnosc rozwijania
-% fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
-% fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
+fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
+	fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
 
 
 expand(node(State, _, _, Cost, _), NewNodes) :-
@@ -135,22 +134,22 @@ get_n_elem([_ | RList], N, Iter, Elem):-
 	get_n_elem(RList, N, NewIter, Elem).
 
 expand_limit(Iter,OldLimit,OldLimit):-
-	Iter < OldLimit, !.
+	Iter =< OldLimit, !.
 expand_limit(Iter,OldLimit, NewLimit):-
-	Iter >= OldLimit,
+	Iter > OldLimit,
 	format('\nDepth limit of ~w reached, do you want to increase depth limit?',[OldLimit]),nl,
 	ask(Choice),
-	add_limit(OldLimit,NewLimit,2,Choice),!.
+	add_limit(OldLimit,NewLimit,1,Choice),!.
 
 add_limit(OldLimit, NewLimit,Increase,'yes'):-
 	NewLimit is OldLimit + Increase,
 	format('New depth limit is ~w',[NewLimit]),nl.
-add_limit(OldLimit, OldLimit, _,'no').
+add_limit(OldLimit, OldLimit, _,'no'):-fail.
 
 
-test(Lista,NL):-
-	expand_limit(2,2,NL),
-	write('test'),nl,
-	read_list(Lista,NL).
-
-
+test(Lista,I,L):-
+	expand_limit(I,L,NL),
+	format('test ~w',[I]),nl,
+	NI is I +1,
+	read_list(Lista,NL),
+	test(Lista,NI,NL).
