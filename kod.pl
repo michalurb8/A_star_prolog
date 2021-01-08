@@ -23,14 +23,11 @@ continue(Node, RestQueue, ClosedSet, Path, N, Iter, Limit) :-
 	NewIter is Iter+1,
 	search_A_star(NewQueue, [Node | ClosedSet], Path, N, NewIter, Limit).
 
-
 fetch(node(State, Action, Parent, Cost, Score), Queue, [WhichFirst | _], ClosedSet, RestQueue) :-
 	get_element(Queue, WhichFirst, node(State, Action, Parent, Cost, Score)),
 	\+ member(node(State, _, _, _, _), ClosedSet),
 	del(Queue, node(State, Action, Parent, Cost, Score), RestQueue).
 
-% bez tego nie ma dziwnych nawrotow a tez dziala. Moze jednak nie
-% potrzebne, ale po co wtedy podawac kolejnosc rozwijania
 fetch(Node, Queue, [_ | ChoiceRest], ClosedSet, NewRest) :-
 	fetch(Node, Queue, ChoiceRest, ClosedSet, NewRest).
 
@@ -127,12 +124,14 @@ process_list(N, Iter, [X|RList], [X|ProcessedList]):-
 get_element(List, N, Element):-
 	get_n_elem(List, N, 1, Element).
 
-get_n_elem([Elem|_], N, N, Elem).
+get_n_elem([Elem|_], N, N, Elem):-!.
 get_n_elem([_ | RList], N, Iter, Elem):-
 	Iter < N,
 	NewIter is Iter+1,
 	get_n_elem(RList, N, NewIter, Elem).
 
+% expand_limit(Iter, OldLimit,NewLimit): Ask user to if he wants
+% to increase current depth limit
 expand_limit(Iter,OldLimit,OldLimit):-
 	Iter =< OldLimit, !.
 expand_limit(Iter,OldLimit, NewLimit):-
@@ -145,11 +144,3 @@ add_limit(OldLimit, NewLimit,Increase,'yes'):-
 	NewLimit is OldLimit + Increase,
 	format('New depth limit is ~w',[NewLimit]),nl.
 add_limit(OldLimit, OldLimit, _,'no'):-fail.
-
-
-test(Lista,I,L):-
-	expand_limit(I,L,NL),
-	format('test ~w',[I]),nl,
-	NI is I +1,
-	read_list(Lista,NL),
-	test(Lista,NI,NL).
