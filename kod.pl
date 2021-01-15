@@ -5,7 +5,7 @@ start_A_star(InitState, PathCost, N, Limit) :-
 
 search_A_star(Queue, ClosedSet, PathCost, N, Iter, Limit) :-
 	expand_limit(Iter,Limit,NewLimit),
-	presentn(Queue, N, Iter),
+	presentn(Queue, N, Iter, Limit),
 	write('Enter the order to choose the nodes at this depth:'), nl,
 	read_list(ChosenList,N),
 	fetch(Node, Queue, ChosenList, ClosedSet, RestQueue),
@@ -82,8 +82,8 @@ del([Y | R],X,[Y | R1]) :-
 	del(R,X,R1).
 
 %presentn(List, N, Depth) : Prints a prompt with current Depth, then the first N elements of List
-presentn(List, N, Depth) :-
-	format('\nEntering depth ~w: These are the first nodes in the queue (max ~w):', [Depth, N]), nl,
+presentn(List, N, Depth, Limit) :-
+	format('\nEntering depth ~w (max ~w): These are the first nodes in the queue (max ~w):', [Depth, Limit, N]), nl,
 	printn(List, N), nl, nl.
 
 %printn(List, N) : Prints the first N elements of List
